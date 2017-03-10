@@ -30,7 +30,7 @@ const argv = minimist(process.argv.slice(2), {
     // Deprecated in 0.0.10
     "flow-parser"
   ],
-  string: ["print-width", "tab-width", "parser", "trailing-comma"],
+  string: ["print-width", "tab-width", "parser", "trailing-comma", "semi-colon"],
   default: { color: true, "bracket-spacing": true, parser: "babylon" },
   alias: { help: "h", version: "v", "list-different": "l" },
   unknown: param => {
@@ -126,6 +126,7 @@ const options = {
   singleQuote: argv["single-quote"],
   jsxBracketSameLine: argv["jsx-bracket-same-line"],
   trailingComma: getTrailingComma(),
+  semiColon: argv["semi-colon"],
   parser: getParserOption()
 };
 
