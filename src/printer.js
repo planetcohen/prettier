@@ -49,6 +49,10 @@ function shouldPrintComma(options, level) {
   }
 }
 
+function semiColon(options) {
+  return (options.semiColon === 'off') ? "" : ";";
+}
+
 function genericPrint(path, options, printPath) {
   assert.ok(path instanceof FastPath);
 
@@ -144,7 +148,7 @@ function genericPrintNoParens(path, options, print) {
       if (n.directives) {
         path.each(
           function(childPath) {
-            parts.push(print(childPath), ";", hardline);
+            parts.push(print(childPath), semiColon(options), hardline);
             if (
               util.isNextLineEmpty(options.originalText, childPath.getValue())
             ) {
@@ -179,7 +183,7 @@ function genericPrintNoParens(path, options, print) {
     case "EmptyStatement":
       return "";
     case "ExpressionStatement":
-      return concat([path.call(print, "expression"), ";"]); // Babel extension.
+      return concat([path.call(print, "expression"), semiColon(options)]); // Babel extension.
     case "ParenthesizedExpression":
       return concat(["(", path.call(print, "expression"), ")"]);
     case "AssignmentExpression":
@@ -455,7 +459,7 @@ function genericPrintNoParens(path, options, print) {
         parts.push(" as ", path.call(print, "exported"));
       }
 
-      parts.push(" from ", path.call(print, "source"), ";");
+      parts.push(" from ", path.call(print, "source"), semiColon(options));
 
       return concat(parts);
     case "ExportNamespaceSpecifier":
@@ -522,7 +526,7 @@ function genericPrintNoParens(path, options, print) {
         parts.push("{} from ");
       }
 
-      fromParts.push(path.call(print, "source"), ";");
+      fromParts.push(path.call(print, "source"), semiColon(options));
 
       // If there's a very long import, break the following way:
       //
@@ -578,7 +582,7 @@ function genericPrintNoParens(path, options, print) {
             parts.push(
               indent(
                 options.tabWidth,
-                concat([hardline, print(childPath), ";"])
+                concat([hardline, print(childPath), semiColon(options)])
               )
             );
           },
@@ -616,7 +620,7 @@ function genericPrintNoParens(path, options, print) {
         }
       }
 
-      parts.push(";");
+      parts.push(semiColon(options));
 
       return concat(parts);
     case "CallExpression": {
@@ -958,7 +962,7 @@ function genericPrintNoParens(path, options, print) {
           namedTypes.ForAwaitStatement.check(parentNode));
 
       if (!(isParentForLoop && parentNode.body !== n)) {
-        parts.push(";");
+        parts.push(semiColon(options));
       }
 
       return group(concat(parts));
@@ -1117,7 +1121,7 @@ function genericPrintNoParens(path, options, print) {
       if (hasBraces) parts.push(" while");
       else parts.push(concat([line, "while"]));
 
-      parts.push(" (", path.call(print, "test"), ");");
+      parts.push(" (", path.call(print, "test"), ")"+semiColon(options));
 
       return concat(parts);
     case "DoExpression":
@@ -1127,7 +1131,7 @@ function genericPrintNoParens(path, options, print) {
 
       if (n.label) parts.push(" ", path.call(print, "label"));
 
-      parts.push(";");
+      parts.push(semiColon(options));
 
       return concat(parts);
     case "ContinueStatement":
@@ -1135,12 +1139,12 @@ function genericPrintNoParens(path, options, print) {
 
       if (n.label) parts.push(" ", path.call(print, "label"));
 
-      parts.push(";");
+      parts.push(semiColon(options));
 
       return concat(parts);
     case "LabeledStatement":
       if (n.body.type === "EmptyStatement") {
-        return concat([path.call(print, "label"), ":;"]);
+        return concat([path.call(print, "label"), ":"+semiColon(options)]);
       }
 
       return concat([
@@ -1178,7 +1182,7 @@ function genericPrintNoParens(path, options, print) {
 
       return concat(parts);
     case "ThrowStatement":
-      return concat(["throw ", path.call(print, "argument"), ";"]);
+      return concat(["throw ", path.call(print, "argument"), semiColon(options)]);
     // Note: ignoring n.lexical because it has no printing consequences.
     case "SwitchStatement":
       return concat([
@@ -1216,7 +1220,7 @@ function genericPrintNoParens(path, options, print) {
       return concat(parts);
     // JSX extensions below.
     case "DebuggerStatement":
-      return "debugger;";
+      return "debugger" + semiColon(options);
     case "JSXAttribute":
       parts.push(path.call(print, "name"));
 
@@ -1365,7 +1369,7 @@ function genericPrintNoParens(path, options, print) {
     case "ClassPropertyDefinition":
       parts.push("static ", path.call(print, "definition"));
 
-      if (!namedTypes.MethodDefinition.check(n.definition)) parts.push(";");
+      if (!namedTypes.MethodDefinition.check(n.definition)) parts.push(semiColon(options));
 
       return concat(parts);
     case "ClassProperty":
@@ -1390,7 +1394,7 @@ function genericPrintNoParens(path, options, print) {
 
       if (n.value) parts.push(" = ", path.call(print, "value"));
 
-      parts.push(";");
+      parts.push(semiColon(options));
 
       return concat(parts);
     case "ClassDeclaration":
@@ -1501,7 +1505,7 @@ function genericPrintNoParens(path, options, print) {
         path.call(print, "id"),
         n.predicate ? " " : "",
         path.call(print, "predicate"),
-        ";"
+        semiColon(options)
       ]);
     case "DeclareModule":
       return printFlowDeclaration(path, [
@@ -1514,10 +1518,10 @@ function genericPrintNoParens(path, options, print) {
       return printFlowDeclaration(path, [
         "module.exports",
         path.call(print, "typeAnnotation"),
-        ";"
+        semiColon(options)
       ]);
     case "DeclareVariable":
-      return printFlowDeclaration(path, ["var ", path.call(print, "id"), ";"]);
+      return printFlowDeclaration(path, ["var ", path.call(print, "id"), semiColon(options)]);
     case "DeclareExportAllDeclaration":
       return concat(["declare export * from ", path.call(print, "source")]);
     case "DeclareExportDeclaration":
@@ -1724,7 +1728,7 @@ function genericPrintNoParens(path, options, print) {
               concat([hardline, path.call(print, "right")])
             )
           : concat([" ", path.call(print, "right")]),
-        ";"
+        semiColon(options)
       );
 
       return concat(parts);
@@ -2157,7 +2161,7 @@ function printExportDeclaration(path, options, print) {
       (decl.declaration.type !== "ClassDeclaration" &&
         decl.declaration.type !== "FunctionDeclaration")
     ) {
-      parts.push(";");
+      parts.push(semiColon(options));
     }
   } else {
     if (decl.specifiers && decl.specifiers.length > 0) {
@@ -2200,7 +2204,7 @@ function printExportDeclaration(path, options, print) {
       parts.push(" from ", path.call(print, "source"));
     }
 
-    parts.push(";");
+    parts.push(semiColon(options));
   }
 
   return concat(parts);
@@ -2832,7 +2836,7 @@ function printBinaryishExpressions(path, parts, print, options, isNested) {
 
 function adjustClause(clause, options, forceSpace) {
   if (clause === "") {
-    return ";";
+    return semiColon(options);
   }
 
   if (isCurlyBracket(clause) || forceSpace) {
